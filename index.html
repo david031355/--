@@ -18,36 +18,35 @@
     }
     #charts-container {
       display: flex;
-      flex-wrap: nowrap; /* *ודא שזה מוגדר כך כדי למנוע מעבר שורה* */
-      overflow-x: auto;  /* מאפשר גלילה אופקית אם אין מקום */
+      flex-wrap: nowrap; /* *חשוב: שומר אותם תמיד בשורה אחת* */
+      overflow-x: auto;  /* *מאפשר גלילה אופקית אם אין מקום* */
       gap: 20px;
       padding-bottom: 10px;
-      align-items: flex-start; /* יישור התרשימים למעלה */
+      align-items: flex-start; /* יישור התרשימים לחלק העליון */
     }
     .chart-box {
-      /* הגדרות גמישות עבור flex items */
-      flex-shrink: 0; /* מונע מהתרשים להתכווץ פחות מהרוחב הבסיסי */
-      flex-grow: 0; /* מונע מהתרשים לגדול מעבר לרוחב הבסיסי */
+      /* הגדרות רוחב קבועות כדי למנוע מעבר שורה */
+      flex-shrink: 0; /* מונע מהתרשים להתכווץ */
+      flex-grow: 0; /* מונע מהתרשים לגדול */
       flex-basis: 350px; /* רוחב הבסיס של כל תרשים */
       
-      min-width: 350px; /* רוחב מינימלי קבוע כדי למנוע התכווצות */
-      max-width: 350px; /* רוחב מקסימלי קבוע כדי למנוע גדילה */
+      min-width: 350px; /* *רוחב מינימלי קבוע כדי למנוע התכווצות* */
+      max-width: 350px; /* *רוחב מקסימלי קבוע כדי למנוע גדילה* */
 
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      height: 450px; /* **גובה קבוע ל-chart-box לצרכי בדיקה** */
+      height: 450px; /* גובה קבוע ל-chart-box */
       box-sizing: border-box;
 
-      display: flex; /* כדי שהקנבס יתמקם נכון בתוכו */
+      /* כדי שהקנבס יתמקם נכון בתוכו */
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
     
-    /* הסרנו media queries לגובה עבור chart-box לצרכי בדיקה זו */
-
     button {
       font-size: 16px;
       padding: 10px 20px;
@@ -65,7 +64,7 @@
     }
     canvas {
       width: 100% !important; 
-      height: 100% !important; /* **ממלא את הגובה של chart-box** */
+      height: 100% !important; /* ממלא את הגובה של chart-box */
       max-height: 400px; /* שומר על גובה סביר בתוך ה-chart-box */
     }
     .leader {
