@@ -18,39 +18,36 @@
     }
     #charts-container {
       display: flex;
-      flex-wrap: nowrap; /* חשוב: שומר אותם תמיד בשורה אחת */
+      flex-wrap: nowrap; /* *ודא שזה מוגדר כך כדי למנוע מעבר שורה* */
       overflow-x: auto;  /* מאפשר גלילה אופקית אם אין מקום */
       gap: 20px;
-      padding-bottom: 10px; /* פדינג קטן לגלילה נוחה יותר */
+      padding-bottom: 10px;
+      align-items: flex-start; /* יישור התרשימים למעלה */
     }
     .chart-box {
-      flex: 0 0 350px; /* רוחב בסיס של 350px. לא יגדל, רק יתכווץ */
-      min-width: 300px; /* רוחב מינימלי שהתרשים יכול להתכווץ אליו */
+      /* הגדרות גמישות עבור flex items */
+      flex-shrink: 0; /* מונע מהתרשים להתכווץ פחות מהרוחב הבסיסי */
+      flex-grow: 0; /* מונע מהתרשים לגדול מעבר לרוחב הבסיסי */
+      flex-basis: 350px; /* רוחב הבסיס של כל תרשים */
+      
+      min-width: 350px; /* רוחב מינימלי קבוע כדי למנוע התכווצות */
+      max-width: 350px; /* רוחב מקסימלי קבוע כדי למנוע גדילה */
+
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      height: 70vh; /* שומר על גובה יחסי לגובה המסך */
+      height: 450px; /* **גובה קבוע ל-chart-box לצרכי בדיקה** */
       box-sizing: border-box;
-      
-      /* שינויים חדשים כדי למקם את הקנבס בתוך הבוקס טוב יותר */
-      display: flex;
+
+      display: flex; /* כדי שהקנבס יתמקם נכון בתוכו */
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
+    
+    /* הסרנו media queries לגובה עבור chart-box לצרכי בדיקה זו */
 
-    @media (max-width: 1200px) {
-      .chart-box {
-        height: 60vh;
-      }
-    }
-
-    @media (max-width: 800px) {
-      .chart-box {
-        height: 50vh;
-      }
-    }
     button {
       font-size: 16px;
       padding: 10px 20px;
@@ -67,9 +64,9 @@
       background-color: #0056b3;
     }
     canvas {
-      width: 100% !important; /* ודא שהקנבס ממלא את הרוחב הזמין בתוך ה-box */
-      height: 100% !important; /* ודא שהקנבס ממלא את הגובה הזמין בתוך ה-box */
-      max-height: 400px; /* הגובה המקסימלי של הקנבס, כדי לא למתוח אותו יותר מדי */
+      width: 100% !important; 
+      height: 100% !important; /* **ממלא את הגובה של chart-box** */
+      max-height: 400px; /* שומר על גובה סביר בתוך ה-chart-box */
     }
     .leader {
       border: 3px solid #ff0000;
