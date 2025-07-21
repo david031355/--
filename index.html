@@ -1,222 +1,180 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-  <meta charset="UTF-8">
-  <title>סיכום ניקוד שופטים וקהל</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      direction: rtl;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    .controls {
-      margin-bottom: 20px;
-    }
-    #charts-container {
-      display: flex;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      gap: 20px;
-    }
-    .chart-box {
-  flex: 1 1 0;
-  min-width: 0;
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  height: 70vh;
-}
+  <meta charset="UTF-8">
+  <title>סיכום ניקוד שופטים וקהל</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .controls {
+      margin-bottom: 20px;
+      text-align: center; /* ממורכז את הכפתור */
+    }
+    #charts-container {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 20px;
+    }
+    .chart-box {
+      flex: 1 1 0;
+      min-width: 0;
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      height: 70vh;
+    }
 
-@media (max-width: 1200px) {
-  .chart-box {
-    height: 60vh;
-  }
-}
+    @media (max-width: 1200px) {
+      .chart-box {
+        height: 60vh;
+      }
+    }
 
-@media (max-width: 800px) {
-  .chart-box {
-    height: 50vh;
-  }
-}
+    @media (max-width: 800px) {
+      .chart-box {
+        height: 50vh;
+      }
+    }
 
-#file-label, button {
-  font-size: 16px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  margin: 0 10px;
-  transition: background-color 0.3s;
-}
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      margin: 0 10px;
+      transition: background-color 0.3s;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
 
-#file-label {
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-}
-
-#file-label:hover {
-  background-color: #0056b3;
-}
-
-button {
-  background-color: #28a745;
-  color: white;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #218838;
-}
-    canvas {
-      height: 400px !important;
-    }
-  
-.leader {
-  border: 3px solid #ff0000;
-  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-}
-
-</style>
+    button:hover {
+      background-color: #0056b3;
+    }
+    canvas {
+      height: 400px !important;
+    }
+    .leader {
+      border: 3px solid #ff0000;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+    }
+  </style>
 </head>
 <body>
-    <h1 style="text-align:center; margin-top: 20px; font-size: 28px; font-family: Arial;">סיכום ניקוד שופטים וקהל</h1>
-
-<div style="text-align: center; margin: 20px;">
-  <button onclick="reloadCharts()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 6px;">
-    🔄 רענן נתונים
-  </button>
-</div>
-
-    
+    <h1 style="text-align:center; margin-top: 20px; font-size: 28px; font-family: Arial;">סיכום ניקוד שופטים וקהל</h1>
 
 <div class="controls">
-  <input type="file" id="csvFileInput" accept=".csv">
-  <button onclick="refreshData()">רענן נתונים</button>
+  <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
 </div>
 
 <div id="charts-container"></div>
 
 <script>
-let parsedData = null;
+// כתובת ה-URL של גיליון גוגל שפורסם כ-CSV
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
 
-function loadCSVFromFile(file) {
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
-      parsedData = results.data;
-      document.getElementById('csvFileInput').style.display = 'none';
-      drawCharts(parsedData);
-    }
-  });
+let parsedData = null; // יישאר גלובלי לאחסון הנתונים
+
+// פונקציה לטעינת נתונים מגיליון גוגל
+function fetchGoogleSheetData() {
+  Papa.parse(GOOGLE_SHEET_CSV_URL, {
+    download: true, // חובה להוריד את הקובץ מה-URL
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      parsedData = results.data;
+      // בדיקה נוספת: נדפיס את הנתונים לקונסולה כדי שתוכל לראות אותם
+      console.log("נתונים שנטענו מגיליון גוגל:", parsedData);
+      if (parsedData && parsedData.length > 0) {
+        drawCharts(parsedData);
+      } else {
+        alert("לא הצלחנו לטעון נתונים מגיליון גוגל, או שהגיליון ריק. ודא שהקישור תקין והגיליון פורסם כ-CSV ומכיל נתונים.");
+      }
+    },
+    error: function(err, file) {
+      console.error("שגיאה בטעינת הנתונים:", err, file);
+      alert("אירעה שגיאה בטעינת הנתונים מגיליון גוגל. אנא בדוק את קונסולת המפתחים לפרטים נוספים.");
+    }
+  });
 }
 
 function drawCharts(data) {
-  const container = document.getElementById('charts-container');
-  container.innerHTML = '';
+  const container = document.getElementById('charts-container');
+  container.innerHTML = ''; // מנקה את התרשימים הקיימים
 
-  // חישוב מקסימום כולל לצורך קנה מידה אחיד
-  let maxVal = 0;
-  data.forEach(row => {
-    const val1 = parseFloat(row.Value_1) || 0;
-    const val2 = parseFloat(row.Value_2) || 0;
-    const sum = val1 + val2;
-    maxVal = Math.max(maxVal, val1, val2, sum);
-  });
-  const scaleMax = Math.ceil(maxVal * 1.1);
+  // חישוב מקסימום כולל לצורך קנה מידה אחיד
+  let maxVal = 0;
+  data.forEach(row => {
+    const val1 = parseFloat(row.Value_1) || 0;
+    const val2 = parseFloat(row.Value_2) || 0;
+    const sum = val1 + val2;
+    maxVal = Math.max(maxVal, val1, val2, sum);
+  });
+  const scaleMax = Math.ceil(maxVal * 1.1);
 
-  data.forEach((row, index) => {
-    const title = row.Chart_Title || `תרשים ${index + 1}`;
-    const label1 = row.Label_1 || 'קהל';
-    const label2 = row.Label_2 || 'שופטים';
-    const val1 = parseFloat(row.Value_1) || 0;
-    const val2 = parseFloat(row.Value_2) || 0;
-    const total = val1 + val2;
+  data.forEach((row, index) => {
+    // ודא שכל העמודות הנדרשות קיימות בשורה
+    if (!row.Chart_Title || !row.Label_1 || !row.Label_2 || !row.Value_1 || !row.Value_2) {
+      console.warn(`שורה ${index + 2} (כולל כותרות) חסרה נתונים ונדלגת:`, row);
+      return; // דלג על שורות חסרות נתונים
+    }
 
-    const canvas = document.createElement('canvas');
-    const chartBox = document.createElement('div');
-    chartBox.className = 'chart-box';
-    chartBox.appendChild(canvas);
-    container.appendChild(chartBox);
+    const title = row.Chart_Title || `תרשים ${index + 1}`;
+    const label1 = row.Label_1 || 'קהל';
+    const label2 = row.Label_2 || 'שופטים';
+    const val1 = parseFloat(row.Value_1) || 0;
+    const val2 = parseFloat(row.Value_2) || 0;
+    const total = val1 + val2;
 
-    new Chart(canvas.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: [label1, label2, 'סה"כ'],
-        datasets: [{
-          label: title,
-          data: [val1, val2, total],
-          backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726']
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            suggestedMax: scaleMax,
-            beginAtZero: true
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: title,
-            font: { size: 18 }
-          }
-        }
-      }
-    });
-  });
+    const canvas = document.createElement('canvas');
+    const chartBox = document.createElement('div');
+    chartBox.className = 'chart-box';
+    chartBox.appendChild(canvas);
+    container.appendChild(chartBox);
+
+    new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: [label1, label2, 'סה"כ'],
+        datasets: [{
+          label: title,
+          data: [val1, val2, total],
+          backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            suggestedMax: scaleMax,
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: title,
+            font: { size: 18 }
+          }
+        }
+      }
+    });
+  });
 }
 
-document.getElementById('csvFileInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file) {
-    loadCSVFromFile(file);
-  }
-});
-
-function refreshData() {
-  if (parsedData) {
-    drawCharts(parsedData);
-  } else {
-    alert("לא נטען עדיין קובץ נתונים.");
-  }
-}
+// קריאה ראשונית לטעינת הנתונים כשדף נטען
+document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
 </script>
-
-
-
-<script>
-let lastFile = null;
-
-// Store loaded file
-function loadCSV(file) {
-  lastFile = file;
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    const text = e.target.result;
-    const data = parseCSV(text);
-    renderCharts(data);
-  };
-  reader.readAsText(file);
-}
-
-function reloadCharts() {
-  if (lastFile) {
-    loadCSV(lastFile);
-  } else {
-    alert("לא נטען קובץ CSV עדיין.");
-  }
-}
-</script>
-
 
 </body>
 </html>
