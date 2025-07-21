@@ -48,28 +48,26 @@
       justify-content: flex-start;
       align-items: flex-end;
       gap: 20px;
-      overflow-x: auto;
+      overflow-x: hidden;
       overflow-y: hidden;
       padding: 20px;
       flex-grow: 1;
     }
 
- .chart-box {
-  flex-shrink: 0;
-  width: 360px;
-  height: 80vh; /* ← זה מה ששינינו */
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-
+    .chart-box {
+      flex-shrink: 0;
+      width: calc((100vw - 80px) / 5); /* התאמה ל-5 תרשימים עם רווחים */
+      height: 80vh; /* גובה יחסי לגובה המסך */
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
 
     canvas {
       width: 100% !important;
@@ -81,7 +79,7 @@
   <h1>סיכום ניקוד שופטים וקהל</h1>
 
   <div class="controls">
-    <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
+    <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים </button>
   </div>
 
   <div id="charts-container"></div>
