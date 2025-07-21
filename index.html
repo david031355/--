@@ -1,151 +1,166 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he">
 <head>
-  <meta charset="UTF-8" />
-  <title>השוואת תרשימים</title>
+  <meta charset="UTF-8">
+  <title>סיכום ניקוד שופטים וקהל</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
       direction: rtl;
+      padding: 0;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin: 20px 0 0 0;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
     #charts-container {
       display: flex;
       flex-direction: row-reverse;
       flex-wrap: nowrap;
-      overflow-x: auto;
+      justify-content: flex-start;
+      align-items: flex-end;
       gap: 20px;
+      overflow-x: auto;
+      overflow-y: hidden;
       padding: 20px;
+      flex-grow: 1;
     }
+
     .chart-box {
-      flex: 0 0 360px;
+      flex-shrink: 0;
+      width: 360px;
+      height: 300px;
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
+      box-sizing: border-box;
     }
+
     canvas {
       width: 100% !important;
-      height: 300px !important;
-    }
-    .leader-label {
-      margin-top: 10px;
-      font-weight: bold;
-      color: #006400;
+      height: 100% !important;
     }
   </style>
 </head>
 <body>
+  <h1>סיכום ניקוד שופטים וקהל</h1>
+
+  <div class="controls">
+    <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
+  </div>
+
   <div id="charts-container"></div>
 
   <script>
-    // נתונים לדוגמה
-    const chartsData = [
-      {
-        title: 'שלב 1',
-        data: [
-          { name: 'קבוצה א', judges: 80, votes: 120 },
-          { name: 'קבוצה ב', judges: 70, votes: 110 }
-        ]
-      },
-      {
-        title: 'שלב 2',
-        data: [
-          { name: 'קבוצה ג', judges: 60, votes: 130 },
-          { name: 'קבוצה ד', judges: 95, votes: 90 }
-        ]
-      },
-      {
-        title: 'שלב 3',
-        data: [
-          { name: 'קבוצה ה', judges: 85, votes: 115 },
-          { name: 'קבוצה ו', judges: 90, votes: 100 }
-        ]
-      }
-    ];
+    const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
 
-    // פונקציה לחישוב סכום נקודות
-    function getTotal(item) {
-      return item.votes + item.judges;
-    }
-
-    // מיין לפי הקבוצה עם סך נקודות הגבוה ביותר בתרשים
-    chartsData.sort((a, b) => {
-      const maxA = Math.max(...a.data.map(getTotal));
-      const maxB = Math.max(...b.data.map(getTotal));
-      return maxB - maxA;
-    });
-
-    const container = document.getElementById("charts-container");
-
-    chartsData.forEach(({ title, data }, index) => {
-      const chartBox = document.createElement("div");
-      chartBox.className = "chart-box";
-
-      const canvas = document.createElement("canvas");
-      canvas.id = `chart-${index}`;
-      chartBox.appendChild(canvas);
-
-      // מציאת הקבוצה המובילה
-      const leader = data.reduce((prev, curr) =>
-        getTotal(curr) > getTotal(prev) ? curr : prev
-      );
-
-      const leaderLabel = document.createElement("div");
-      leaderLabel.className = "leader-label";
-      leaderLabel.innerText = `🏆 הקבוצה המובילה: ${leader.name}`;
-      chartBox.appendChild(leaderLabel);
-
-      container.appendChild(chartBox);
-
-      new Chart(canvas.getContext("2d"), {
-        type: "bar",
-        data: {
-          labels: data.map((item) => item.name),
-          datasets: [
-            {
-              label: "שופטים",
-              data: data.map((item) => item.judges),
-              backgroundColor: "rgba(54, 162, 235, 0.7)"
-            },
-            {
-              label: "קהל",
-              data: data.map((item) => item.votes),
-              backgroundColor: "rgba(255, 99, 132, 0.7)"
-            }
-          ]
+    function fetchGoogleSheetData() {
+      Papa.parse(GOOGLE_SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          drawCharts(results.data);
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            title: {
-              display: true,
-              text: title,
-              font: { size: 18 }
-            },
-            legend: {
-              position: "bottom",
-              labels: {
-                font: { size: 12 }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
+        error: function(err) {
+          alert("שגיאה בטעינת הנתונים: " + err);
         }
       });
-    });
+    }
+
+    function drawCharts(data) {
+      const container = document.getElementById('charts-container');
+      container.innerHTML = '';
+
+      let maxVal = 0;
+      data.forEach(row => {
+        const val1 = parseFloat(row.Value_1) || 0;
+        const val2 = parseFloat(row.Value_2) || 0;
+        const total = val1 + val2;
+        maxVal = Math.max(maxVal, val1, val2, total);
+      });
+      const scaleMax = Math.ceil(maxVal * 1.1);
+
+      data.forEach((row, index) => {
+        const title = row.Chart_Title || `תרשים ${index + 1}`;
+        const label1 = row.Label_1;
+        const label2 = row.Label_2;
+        const val1 = parseFloat(row.Value_1) || 0;
+        const val2 = parseFloat(row.Value_2) || 0;
+        const total = val1 + val2;
+
+        const canvas = document.createElement('canvas');
+        const chartBox = document.createElement('div');
+        chartBox.className = 'chart-box';
+        chartBox.appendChild(canvas);
+        container.appendChild(chartBox);
+
+        new Chart(canvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: [label1, label2, 'סה"כ'],
+            datasets: [{
+              label: title,
+              data: [val1, val2, total],
+              backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                suggestedMax: scaleMax,
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: title,
+                font: { size: 18 }
+              }
+            }
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
   </script>
 </body>
 </html>
