@@ -26,7 +26,7 @@
       display: flex;
       flex-direction: row-reverse;
       flex-grow: 1;
-      flex-wrap: wrap; /* ✅ במקום nowrap – התרשימים יעברו שורה אם אין מקום */
+      flex-wrap: wrap;
       overflow-x: hidden;
       overflow-y: auto;
       gap: 10px;
@@ -92,6 +92,9 @@
   <div id="charts-container"></div>
 
   <script>
+    // ✅ תיקון טשטוש: התאמה לרזולוציה גבוהה
+    Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
+
     const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
     let parsedData = null;
 
