@@ -18,20 +18,20 @@
     }
     #charts-container {
       display: flex;
-      flex-wrap: nowrap; /* שומר אותם בשורה אחת */
+      flex-wrap: nowrap; /* חשוב: שומר אותם תמיד בשורה אחת */
       overflow-x: auto;  /* מאפשר גלילה אופקית אם אין מקום */
       gap: 20px;
       padding-bottom: 10px; /* פדינג קטן לגלילה נוחה יותר */
     }
     .chart-box {
-      flex: 0 0 350px; /* רוחב בסיס של 350px. לא יגדל, רק יתכווץ */
-      min-width: 300px; /* רוחב מינימלי שהתרשים יכול להתכווץ אליו */
+      flex: 1 1 300px; /* גמישות מלאה: יכול לגדול, יכול להתכווץ, בסיס 300px */
+      min-width: 280px; /* רוחב מינימלי שהתרשים יכול להתכווץ אליו */
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      height: 70vh;
-      box-sizing: border-box; /* לוודא שהפדינג לא יוסיף לרוחב הכללי */
+      height: 70vh; /* שומר על גובה יחסי לגובה המסך */
+      box-sizing: border-box;
     }
 
     @media (max-width: 1200px) {
@@ -61,7 +61,7 @@
       background-color: #0056b3;
     }
     canvas {
-      height: 400px !important;
+      height: 400px !important; /* גובה קבוע לתרשים בפנים */
     }
     .leader {
       border: 3px solid #ff0000;
@@ -82,12 +82,11 @@
 // כתובת ה-URL של גיליון גוגל שפורסם כ-CSV
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
 
-let parsedData = null; // יישאר גלובלי לאחסון הנתונים
+let parsedData = null;
 
-// פונקציה לטעינת נתונים מגיליון גוגל
 function fetchGoogleSheetData() {
   Papa.parse(GOOGLE_SHEET_CSV_URL, {
-    download: true, // חובה להוריד את הקובץ מה-URL
+    download: true,
     header: true,
     skipEmptyLines: true,
     complete: function(results) {
@@ -108,9 +107,8 @@ function fetchGoogleSheetData() {
 
 function drawCharts(data) {
   const container = document.getElementById('charts-container');
-  container.innerHTML = ''; // מנקה את התרשימים הקיימים
+  container.innerHTML = '';
 
-  // חישוב מקסימום כולל לצורך קנה מידה אחיד
   let maxVal = 0;
   data.forEach(row => {
     const val1 = parseFloat(row.Value_1) || 0;
@@ -121,10 +119,9 @@ function drawCharts(data) {
   const scaleMax = Math.ceil(maxVal * 1.1);
 
   data.forEach((row, index) => {
-    // ודא שכל העמודות הנדרשות קיימות בשורה
     if (!row.Chart_Title || !row.Label_1 || !row.Label_2 || !row.Value_1 || !row.Value_2) {
       console.warn(`שורה ${index + 2} (כולל כותרות) חסרה נתונים ונדלגת:`, row);
-      return; // דלג על שורות חסרות נתונים
+      return;
     }
 
     const title = row.Chart_Title || `תרשים ${index + 1}`;
