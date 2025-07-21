@@ -32,28 +32,26 @@
       align-items: center; /* מרכז את התרשימים ברוחב המיכל */
       justify-content: flex-end; /* מיישר את התרשימים לתחתית המיכל */
     }
-    .chart-box {
-      /* הגדרות גובה קבועות במקום רוחב */
-      flex-shrink: 0; /* מונע מהתרשים להתכווץ */
-      flex-grow: 0; /* מונע מהתרשים לגדול */
-      flex-basis: 450px; /* גובה הבסיס של כל תרשים */
-      
-      min-height: 400px; /* *גובה מינימלי קבוע כדי למנוע התכווצות* */
-      max-height: 500px; /* *גובה מקסימלי קבוע כדי למנוע גדילה* */
-      width: 90%; /* התרשים יתפוס 90% מרוחב המיכל שלו */
-      max-width: 600px; /* רוחב מקסימלי כדי שלא יהיה רחב מדי במסכים גדולים */
+   .chart-box {
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: 400px; /* רוחב בסיסי של כל תרשים */
+  width: 400px;
+  min-height: 400px;
+  max-height: 500px;
 
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      box-sizing: border-box;
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-sizing: border-box;
 
-      display: flex; /* כדי שהקנבס יתמקם נכון בתוכו */
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
     
     button {
       font-size: 16px;
