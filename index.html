@@ -24,29 +24,29 @@
 
     #charts-container {
       display: flex;
-      flex-direction: row-reverse; /* שורה מימין לשמאל */
+      flex-direction: row-reverse;
       flex-grow: 1;
-      flex-wrap: nowrap;
-      overflow-x: auto; /* גלילה אופקית */
-      overflow-y: hidden;
-      gap: 20px;
+      flex-wrap: wrap; /* ✅ במקום nowrap – התרשימים יעברו שורה אם אין מקום */
+      overflow-x: hidden;
+      overflow-y: auto;
+      gap: 10px;
       padding: 10px 0;
-      align-items: flex-end; /* מתחתי המסך */
-      justify-content: flex-end;
+      align-items: flex-end;
+      justify-content: center;
     }
 
     .chart-box {
       flex-shrink: 0;
       flex-grow: 0;
-      flex-basis: 400px;
-      width: 400px;
-      min-height: 400px;
-      max-height: 500px;
+      flex-basis: 220px;
+      width: 220px;
+      min-height: 220px;
+      max-height: 260px;
 
       background: white;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
       box-sizing: border-box;
 
       display: flex;
@@ -83,7 +83,7 @@
   </style>
 </head>
 <body>
-  <h1 style="text-align:center; margin-top: 20px; font-size: 28px; font-family: Arial;">סיכום ניקוד שופטים וקהל</h1>
+  <h1 style="text-align:center; margin-top: 20px; font-size: 24px;">סיכום ניקוד שופטים וקהל</h1>
 
   <div class="controls">
     <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
@@ -164,7 +164,15 @@
             scales: {
               y: {
                 suggestedMax: scaleMax,
-                beginAtZero: true
+                beginAtZero: true,
+                ticks: {
+                  font: { size: 10 }
+                }
+              },
+              x: {
+                ticks: {
+                  font: { size: 10 }
+                }
               }
             },
             plugins: {
@@ -172,7 +180,7 @@
               title: {
                 display: true,
                 text: title,
-                font: { size: 18 }
+                font: { size: 14 }
               }
             }
           }
@@ -182,6 +190,5 @@
 
     document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
   </script>
-יחמור
 </body>
 </html>
