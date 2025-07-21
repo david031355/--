@@ -24,14 +24,20 @@
       padding-bottom: 10px; /* פדינג קטן לגלילה נוחה יותר */
     }
     .chart-box {
-      flex: 1 1 300px; /* גמישות מלאה: יכול לגדול, יכול להתכווץ, בסיס 300px */
-      min-width: 280px; /* רוחב מינימלי שהתרשים יכול להתכווץ אליו */
+      flex: 0 0 350px; /* רוחב בסיס של 350px. לא יגדל, רק יתכווץ */
+      min-width: 300px; /* רוחב מינימלי שהתרשים יכול להתכווץ אליו */
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       height: 70vh; /* שומר על גובה יחסי לגובה המסך */
       box-sizing: border-box;
+      
+      /* שינויים חדשים כדי למקם את הקנבס בתוך הבוקס טוב יותר */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     @media (max-width: 1200px) {
@@ -61,7 +67,9 @@
       background-color: #0056b3;
     }
     canvas {
-      height: 400px !important; /* גובה קבוע לתרשים בפנים */
+      width: 100% !important; /* ודא שהקנבס ממלא את הרוחב הזמין בתוך ה-box */
+      height: 100% !important; /* ודא שהקנבס ממלא את הגובה הזמין בתוך ה-box */
+      max-height: 400px; /* הגובה המקסימלי של הקנבס, כדי לא למתוח אותו יותר מדי */
     }
     .leader {
       border: 3px solid #ff0000;
