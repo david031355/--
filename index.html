@@ -11,10 +11,10 @@
       direction: rtl;
       padding: 20px;
       background-color: #f4f4f4;
-      height: 100vh;
       margin: 0;
       display: flex;
       flex-direction: column;
+      height: 100vh;
     }
 
     .controls {
@@ -24,32 +24,38 @@
 
     #charts-container {
       display: flex;
-      flex-direction: row-reverse;
-      flex-grow: 1;
+      flex-direction: row;
       flex-wrap: wrap;
-      overflow-x: hidden;
+      gap: 20px;
       overflow-y: auto;
-      gap: 15px;
-      padding: 10px 0;
-      align-items: flex-start;
+      overflow-x: hidden;
       justify-content: center;
+      align-items: flex-end;
+      flex-grow: 1;
+      padding-bottom: 10px;
     }
 
     .chart-box {
-      width: 22%;             /* מותאם לגודל המסך – 4-5 תרשימים בשורה */
-      min-width: 180px;       /* לא פחות מזה, כדי לא להיראות קטן מדי במובייל */
-      aspect-ratio: 1 / 1.2;  /* גובה יחסי לרוחב */
-      
+      flex-shrink: 0;
+      flex-grow: 0;
+      flex-basis: 420px;
+      width: 420px;
+      min-height: 350px;
+      max-height: 450px;
       background: white;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       box-sizing: border-box;
-
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
     }
 
     button {
@@ -58,29 +64,48 @@
       border: none;
       border-radius: 8px;
       margin: 0 10px;
-      transition: background-color 0.3s;
       background-color: #007bff;
       color: white;
       cursor: pointer;
+      transition: background-color 0.3s;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    canvas {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
     .leader {
       border: 3px solid #ff0000;
       box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
     }
+
+    @media (max-width: 600px) {
+      .chart-box {
+        width: 90%;
+        max-height: 280px;
+        min-height: 220px;
+        flex-basis: auto;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+
+      #charts-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center; margin-top: 20px; font-size: 24px;">סיכום ניקוד שופטים וקהל</h1>
+  <h1 style="text-align:center; margin-top: 20px;">סיכום ניקוד שופטים וקהל</h1>
 
   <div class="controls">
     <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
@@ -89,8 +114,6 @@
   <div id="charts-container"></div>
 
   <script>
-    Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
-
     const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
     let parsedData = null;
 
@@ -101,16 +124,15 @@
         skipEmptyLines: true,
         complete: function(results) {
           parsedData = results.data;
-          console.log("נתונים שנטענו מגיליון גוגל:", parsedData);
           if (parsedData && parsedData.length > 0) {
             drawCharts(parsedData);
           } else {
-            alert("לא הצלחנו לטעון נתונים מגיליון גוגל, או שהגיליון ריק.");
+            alert("לא נמצאו נתונים. ודא שהגיליון פורסם כ-CSV והוא לא ריק.");
           }
         },
-        error: function(err, file) {
-          console.error("שגיאה בטעינת הנתונים:", err, file);
-          alert("אירעה שגיאה בטעינת הנתונים מגיליון גוגל.");
+        error: function(err) {
+          console.error("שגיאה:", err);
+          alert("שגיאה בטעינת הנתונים מהגיליון.");
         }
       });
     }
@@ -130,13 +152,12 @@
 
       data.forEach((row, index) => {
         if (!row.Chart_Title || !row.Label_1 || !row.Label_2 || !row.Value_1 || !row.Value_2) {
-          console.warn(`שורה ${index + 2} חסרה נתונים ונדלגת:`, row);
           return;
         }
 
-        const title = row.Chart_Title || `תרשים ${index + 1}`;
-        const label1 = row.Label_1 || 'קהל';
-        const label2 = row.Label_2 || 'שופטים';
+        const title = row.Chart_Title;
+        const label1 = row.Label_1;
+        const label2 = row.Label_2;
         const val1 = parseFloat(row.Value_1) || 0;
         const val2 = parseFloat(row.Value_2) || 0;
         const total = val1 + val2;
@@ -163,15 +184,7 @@
             scales: {
               y: {
                 suggestedMax: scaleMax,
-                beginAtZero: true,
-                ticks: {
-                  font: { size: 10 }
-                }
-              },
-              x: {
-                ticks: {
-                  font: { size: 10 }
-                }
+                beginAtZero: true
               }
             },
             plugins: {
@@ -179,7 +192,7 @@
               title: {
                 display: true,
                 text: title,
-                font: { size: 14 }
+                font: { size: 18 }
               }
             }
           }
@@ -189,6 +202,6 @@
 
     document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
   </script>
-12356566666666666666666666666666666666666
+121212
 </body>
 </html>
