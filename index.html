@@ -14,22 +14,24 @@
     }
     .controls {
       margin-bottom: 20px;
-      text-align: center; /* ממורכז את הכפתור */
+      text-align: center;
     }
     #charts-container {
       display: flex;
-      flex-wrap: nowrap;
-      overflow-x: auto;
+      flex-wrap: nowrap; /* שומר אותם בשורה אחת */
+      overflow-x: auto;  /* מאפשר גלילה אופקית אם אין מקום */
       gap: 20px;
+      padding-bottom: 10px; /* פדינג קטן לגלילה נוחה יותר */
     }
     .chart-box {
-      flex: 1 1 0;
-      min-width: 0;
+      flex: 0 0 350px; /* רוחב בסיס של 350px. לא יגדל, רק יתכווץ */
+      min-width: 300px; /* רוחב מינימלי שהתרשים יכול להתכווץ אליו */
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       height: 70vh;
+      box-sizing: border-box; /* לוודא שהפדינג לא יוסיף לרוחב הכללי */
     }
 
     @media (max-width: 1200px) {
@@ -43,7 +45,6 @@
         height: 50vh;
       }
     }
-
     button {
       font-size: 16px;
       padding: 10px 20px;
@@ -91,7 +92,6 @@ function fetchGoogleSheetData() {
     skipEmptyLines: true,
     complete: function(results) {
       parsedData = results.data;
-      // בדיקה נוספת: נדפיס את הנתונים לקונסולה כדי שתוכל לראות אותם
       console.log("נתונים שנטענו מגיליון גוגל:", parsedData);
       if (parsedData && parsedData.length > 0) {
         drawCharts(parsedData);
