@@ -29,20 +29,17 @@
       flex-wrap: wrap;
       overflow-x: hidden;
       overflow-y: auto;
-      gap: 10px;
+      gap: 15px;
       padding: 10px 0;
-      align-items: flex-end;
+      align-items: flex-start;
       justify-content: center;
     }
 
     .chart-box {
-      flex-shrink: 0;
-      flex-grow: 0;
-      flex-basis: 220px;
-      width: 220px;
-      min-height: 220px;
-      max-height: 260px;
-
+      width: 22%;             /* מותאם לגודל המסך – 4-5 תרשימים בשורה */
+      min-width: 180px;       /* לא פחות מזה, כדי לא להיראות קטן מדי במובייל */
+      aspect-ratio: 1 / 1.2;  /* גובה יחסי לרוחב */
+      
       background: white;
       border-radius: 10px;
       padding: 10px;
@@ -92,7 +89,6 @@
   <div id="charts-container"></div>
 
   <script>
-    // ✅ תיקון טשטוש: התאמה לרזולוציה גבוהה
     Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
 
     const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
@@ -193,5 +189,6 @@
 
     document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
   </script>
+12356566666666666666666666666666666666666
 </body>
 </html>
