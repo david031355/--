@@ -11,6 +11,10 @@
       direction: rtl;
       padding: 20px;
       background-color: #f4f4f4;
+      height: 100vh; /* חשוב: הגדרת גובה ל-body כדי לאפשר גלילה אנכית */
+      margin: 0; /* הסרת מרווחים כברירת מחדל */
+      display: flex; /* הופך את ה-body ל-flex container */
+      flex-direction: column; /* מארגן את האלמנטים של ה-body בעמודה */
     }
     .controls {
       margin-bottom: 20px;
@@ -18,30 +22,34 @@
     }
     #charts-container {
       display: flex;
-      flex-wrap: nowrap; /* *חובה: שומר אותם תמיד בשורה אחת* */
-      overflow-x: auto;  /* *מאפשר גלילה אופקית אם אין מקום* */
+      flex-direction: column-reverse; /* *חשוב: מארגן תרשימים בעמודה, מתחיל מלמטה למעלה* */
+      flex-grow: 1; /* מאפשר למיכל התרשימים למלא את השטח הפנוי */
+      flex-wrap: nowrap; /* מונע מעבר שורה רוחבי (לא רלוונטי כל כך בכיוון עמודה) */
+      overflow-y: auto;  /* *מאפשר גלילה אנכית אם אין מקום* */
+      overflow-x: hidden; /* מונע גלילה אופקית */
       gap: 20px;
       padding-bottom: 10px;
-      align-items: flex-start; /* יישור התרשימים לחלק העליון */
+      align-items: center; /* מרכז את התרשימים ברוחב המיכל */
+      justify-content: flex-end; /* מיישר את התרשימים לתחתית המיכל */
     }
     .chart-box {
-      /* הגדרות רוחב קבועות כדי למנוע מעבר שורה */
+      /* הגדרות גובה קבועות במקום רוחב */
       flex-shrink: 0; /* מונע מהתרשים להתכווץ */
       flex-grow: 0; /* מונע מהתרשים לגדול */
-      flex-basis: 350px; /* רוחב הבסיס של כל תרשים */
+      flex-basis: 450px; /* גובה הבסיס של כל תרשים */
       
-      min-width: 350px; /* *רוחב מינימלי קבוע כדי למנוע התכווצות* */
-      max-width: 350px; /* *רוחב מקסימלי קבוע כדי למנוע גדילה* */
+      min-height: 400px; /* *גובה מינימלי קבוע כדי למנוע התכווצות* */
+      max-height: 500px; /* *גובה מקסימלי קבוע כדי למנוע גדילה* */
+      width: 90%; /* התרשים יתפוס 90% מרוחב המיכל שלו */
+      max-width: 600px; /* רוחב מקסימלי כדי שלא יהיה רחב מדי במסכים גדולים */
 
       background: white;
       border-radius: 12px;
       padding: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      height: 450px; /* גובה קבוע ל-chart-box */
       box-sizing: border-box;
 
-      /* כדי שהקנבס יתמקם נכון בתוכו */
-      display: flex;
+      display: flex; /* כדי שהקנבס יתמקם נכון בתוכו */
       flex-direction: column;
       align-items: center;
       justify-content: center;
@@ -65,7 +73,7 @@
     canvas {
       width: 100% !important; 
       height: 100% !important; /* ממלא את הגובה של chart-box */
-      max-height: 400px; /* שומר על גובה סביר בתוך ה-chart-box */
+      /* אין צורך ב-max-height כאן אם ה-chart-box כבר מגביל גובה */
     }
     .leader {
       border: 3px solid #ff0000;
@@ -176,6 +184,6 @@ function drawCharts(data) {
 // קריאה ראשונית לטעינת הנתונים כשדף נטען
 document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
 </script>
-קעמפ קיץ 2015 Ⓒ
+אלחנן שחף פיתוחים
 </body>
 </html>
