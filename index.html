@@ -1,121 +1,222 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-  <meta charset="UTF-8" />
-  <title>תחרות ניקוד</title>
+  <meta charset="UTF-8">
+  <title>סיכום ניקוד שופטים וקהל</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 20px;
+      font-family: Arial, sans-serif;
       direction: rtl;
+      padding: 20px;
+      background-color: #f4f4f4;
     }
-    .charts-container {
+    .controls {
+      margin-bottom: 20px;
+    }
+    #charts-container {
       display: flex;
+      flex-wrap: nowrap;
       overflow-x: auto;
       gap: 20px;
     }
     .chart-box {
-      width: 250px;
-      min-width: 250px;
-      height: 500px; /* גובה מוגדר כדי להבליט את העמודות */
-    }
+  flex: 1 1 0;
+  min-width: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  height: 70vh;
+}
+
+@media (max-width: 1200px) {
+  .chart-box {
+    height: 60vh;
+  }
+}
+
+@media (max-width: 800px) {
+  .chart-box {
+    height: 50vh;
+  }
+}
+
+#file-label, button {
+  font-size: 16px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  margin: 0 10px;
+  transition: background-color 0.3s;
+}
+
+#file-label {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+#file-label:hover {
+  background-color: #0056b3;
+}
+
+button {
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #218838;
+}
     canvas {
-      height: 100% !important;
+      height: 400px !important;
     }
-  </style>
+  
+.leader {
+  border: 3px solid #ff0000;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+}
+
+</style>
 </head>
 <body>
-  <h2>תחרות ניקוד - הצגת תרשימים</h2>
-  <input type="file" id="fileInput" accept=".csv" />
-  <div class="charts-container" id="chartsContainer"></div>
+    <h1 style="text-align:center; margin-top: 20px; font-size: 28px; font-family: Arial;">סיכום ניקוד שופטים וקהל</h1>
 
-  <script>
-    document.getElementById("fileInput").addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
+<div style="text-align: center; margin: 20px;">
+  <button onclick="reloadCharts()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 6px;">
+    🔄 רענן נתונים
+  </button>
+</div>
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const text = e.target.result;
-        const data = parseCSV(text);
-        renderCharts(data);
-      };
-      reader.readAsText(file);
-    });
+    
 
-    function parseCSV(text) {
-      const lines = text.trim().split("\n");
-      const result = [];
+<div class="controls">
+  <input type="file" id="csvFileInput" accept=".csv">
+  <button onclick="refreshData()">רענן נתונים</button>
+</div>
 
-      for (let i = 1; i < lines.length; i++) {
-        const [Chart_Title, Label_1, Value_1, Label_2, Value_2] = lines[i].split(",");
+<div id="charts-container"></div>
 
-        const val1 = parseFloat(Value_1);
-        const val2 = parseFloat(Value_2);
-        const total = val1 + val2;
+<script>
+let parsedData = null;
 
-        result.push({
-          title: Chart_Title,
-          labels: [Label_1, Label_2, "סה\"כ"],
-          values: [val1, val2, total]
-        });
-      }
-      return result;
+function loadCSVFromFile(file) {
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      parsedData = results.data;
+      document.getElementById('csvFileInput').style.display = 'none';
+      drawCharts(parsedData);
     }
+  });
+}
 
-    function renderCharts(chartsData) {
-      const container = document.getElementById("chartsContainer");
-      container.innerHTML = ""; // clear old charts
+function drawCharts(data) {
+  const container = document.getElementById('charts-container');
+  container.innerHTML = '';
 
-      // חישוב מקסימום כולל +10%
-      let globalMax = 0;
-      chartsData.forEach(chart => {
-        const localMax = Math.max(...chart.values);
-        if (localMax > globalMax) globalMax = localMax;
-      });
-      const yMax = Math.ceil(globalMax * 1.1);
+  // חישוב מקסימום כולל לצורך קנה מידה אחיד
+  let maxVal = 0;
+  data.forEach(row => {
+    const val1 = parseFloat(row.Value_1) || 0;
+    const val2 = parseFloat(row.Value_2) || 0;
+    const sum = val1 + val2;
+    maxVal = Math.max(maxVal, val1, val2, sum);
+  });
+  const scaleMax = Math.ceil(maxVal * 1.1);
 
-      chartsData.forEach((chartData, index) => {
-        const chartBox = document.createElement("div");
-        chartBox.className = "chart-box";
+  data.forEach((row, index) => {
+    const title = row.Chart_Title || `תרשים ${index + 1}`;
+    const label1 = row.Label_1 || 'קהל';
+    const label2 = row.Label_2 || 'שופטים';
+    const val1 = parseFloat(row.Value_1) || 0;
+    const val2 = parseFloat(row.Value_2) || 0;
+    const total = val1 + val2;
 
-        const canvas = document.createElement("canvas");
-        canvas.id = "chart" + index;
-        chartBox.appendChild(canvas);
-        container.appendChild(chartBox);
+    const canvas = document.createElement('canvas');
+    const chartBox = document.createElement('div');
+    chartBox.className = 'chart-box';
+    chartBox.appendChild(canvas);
+    container.appendChild(chartBox);
 
-        new Chart(canvas, {
-          type: "bar",
-          data: {
-            labels: chartData.labels,
-            datasets: [{
-              label: chartData.title,
-              data: chartData.values,
-              backgroundColor: ["#4e79a7", "#f28e2b", "#59a14f"]
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false },
-              title: {
-                display: true,
-                text: chartData.title,
-                font: { size: 16 }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: yMax
-              }
-            }
+    new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: [label1, label2, 'סה"כ'],
+        datasets: [{
+          label: title,
+          data: [val1, val2, total],
+          backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            suggestedMax: scaleMax,
+            beginAtZero: true
           }
-        });
-      });
-    }
-  </script>
+        },
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: title,
+            font: { size: 18 }
+          }
+        }
+      }
+    });
+  });
+}
+
+document.getElementById('csvFileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    loadCSVFromFile(file);
+  }
+});
+
+function refreshData() {
+  if (parsedData) {
+    drawCharts(parsedData);
+  } else {
+    alert("לא נטען עדיין קובץ נתונים.");
+  }
+}
+</script>
+
+
+
+<script>
+let lastFile = null;
+
+// Store loaded file
+function loadCSV(file) {
+  lastFile = file;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const text = e.target.result;
+    const data = parseCSV(text);
+    renderCharts(data);
+  };
+  reader.readAsText(file);
+}
+
+function reloadCharts() {
+  if (lastFile) {
+    loadCSV(lastFile);
+  } else {
+    alert("לא נטען קובץ CSV עדיין.");
+  }
+}
+</script>
+
+
 </body>
 </html>
