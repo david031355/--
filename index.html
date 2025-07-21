@@ -1,187 +1,187 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-  <meta charset="UTF-8">
-  <title>סיכום ניקוד שופטים וקהל</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      direction: rtl;
-      padding: 20px;
-      background-color: #f4f4f4;
-      height: 100vh; /* חשוב: הגדרת גובה ל-body כדי לאפשר גלילה אנכית */
-      margin: 0; /* הסרת מרווחים כברירת מחדל */
-      display: flex; /* הופך את ה-body ל-flex container */
-      flex-direction: column; /* מארגן את האלמנטים של ה-body בעמודה */
-    }
-    .controls {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    #charts-container {
-      display: flex;
-      flex-direction: column-reverse; /* *חשוב: מארגן תרשימים בעמודה, מתחיל מלמטה למעלה* */
-      flex-grow: 1; /* מאפשר למיכל התרשימים למלא את השטח הפנוי */
-      flex-wrap: nowrap; /* מונע מעבר שורה רוחבי (לא רלוונטי כל כך בכיוון עמודה) */
-      overflow-y: auto;  /* *מאפשר גלילה אנכית אם אין מקום* */
-      overflow-x: hidden; /* מונע גלילה אופקית */
-      gap: 20px;
-      padding-bottom: 10px;
-      align-items: center; /* מרכז את התרשימים ברוחב המיכל */
-      justify-content: flex-end; /* מיישר את התרשימים לתחתית המיכל */
-    }
-   .chart-box {
-  flex-shrink: 0;
-  flex-grow: 0;
-  flex-basis: 400px; /* רוחב בסיסי של כל תרשים */
-  width: 400px;
-  min-height: 400px;
-  max-height: 500px;
+  <meta charset="UTF-8">
+  <title>סיכום ניקוד שופטים וקהל</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      padding: 20px;
+      background-color: #f4f4f4;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
 
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  box-sizing: border-box;
+    .controls {
+      margin-bottom: 20px;
+      text-align: center;
+    }
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+    #charts-container {
+      display: flex;
+      flex-direction: row-reverse; /* שורה מימין לשמאל */
+      flex-grow: 1;
+      flex-wrap: nowrap;
+      overflow-x: auto; /* גלילה אופקית */
+      overflow-y: hidden;
+      gap: 20px;
+      padding: 10px 0;
+      align-items: flex-end; /* מתחתי המסך */
+      justify-content: flex-end;
+    }
 
-    
-    button {
-      font-size: 16px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      margin: 0 10px;
-      transition: background-color 0.3s;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
+    .chart-box {
+      flex-shrink: 0;
+      flex-grow: 0;
+      flex-basis: 400px;
+      width: 400px;
+      min-height: 400px;
+      max-height: 500px;
 
-    button:hover {
-      background-color: #0056b3;
-    }
-    canvas {
-      width: 100% !important; 
-      height: 100% !important; /* ממלא את הגובה של chart-box */
-      /* אין צורך ב-max-height כאן אם ה-chart-box כבר מגביל גובה */
-    }
-    .leader {
-      border: 3px solid #ff0000;
-      box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-    }
-  </style>
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      margin: 0 10px;
+      transition: background-color 0.3s;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .leader {
+      border: 3px solid #ff0000;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+    }
+  </style>
 </head>
 <body>
-    <h1 style="text-align:center; margin-top: 20px; font-size: 28px; font-family: Arial;">סיכום ניקוד שופטים וקהל</h1>
+  <h1 style="text-align:center; margin-top: 20px; font-size: 28px; font-family: Arial;">סיכום ניקוד שופטים וקהל</h1>
 
-<div class="controls">
-  <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
-</div>
+  <div class="controls">
+    <button onclick="fetchGoogleSheetData()">🔄 רענן נתונים מגיליון גוגל</button>
+  </div>
 
-<div id="charts-container"></div>
+  <div id="charts-container"></div>
 
-<script>
-// כתובת ה-URL של גיליון גוגל שפורסם כ-CSV
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
+  <script>
+    const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSTToy2f936VEdbQMk3zM9drEvaUeaBajHFsAn1BxMID1j43j8l5T8wwZ-UN5HyfboSAYz4K5UAxCxs/pub?output=csv';
+    let parsedData = null;
 
-let parsedData = null;
+    function fetchGoogleSheetData() {
+      Papa.parse(GOOGLE_SHEET_CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          parsedData = results.data;
+          console.log("נתונים שנטענו מגיליון גוגל:", parsedData);
+          if (parsedData && parsedData.length > 0) {
+            drawCharts(parsedData);
+          } else {
+            alert("לא הצלחנו לטעון נתונים מגיליון גוגל, או שהגיליון ריק.");
+          }
+        },
+        error: function(err, file) {
+          console.error("שגיאה בטעינת הנתונים:", err, file);
+          alert("אירעה שגיאה בטעינת הנתונים מגיליון גוגל.");
+        }
+      });
+    }
 
-function fetchGoogleSheetData() {
-  Papa.parse(GOOGLE_SHEET_CSV_URL, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
-      parsedData = results.data;
-      console.log("נתונים שנטענו מגיליון גוגל:", parsedData);
-      if (parsedData && parsedData.length > 0) {
-        drawCharts(parsedData);
-      } else {
-        alert("לא הצלחנו לטעון נתונים מגיליון גוגל, או שהגיליון ריק. ודא שהקישור תקין והגיליון פורסם כ-CSV ומכיל נתונים.");
-      }
-    },
-    error: function(err, file) {
-      console.error("שגיאה בטעינת הנתונים:", err, file);
-      alert("אירעה שגיאה בטעינת הנתונים מגיליון גוגל. אנא בדוק את קונסולת המפתחים לפרטים נוספים.");
-    }
-  });
-}
+    function drawCharts(data) {
+      const container = document.getElementById('charts-container');
+      container.innerHTML = '';
 
-function drawCharts(data) {
-  const container = document.getElementById('charts-container');
-  container.innerHTML = '';
+      let maxVal = 0;
+      data.forEach(row => {
+        const val1 = parseFloat(row.Value_1) || 0;
+        const val2 = parseFloat(row.Value_2) || 0;
+        const sum = val1 + val2;
+        maxVal = Math.max(maxVal, val1, val2, sum);
+      });
+      const scaleMax = Math.ceil(maxVal * 1.1);
 
-  let maxVal = 0;
-  data.forEach(row => {
-    const val1 = parseFloat(row.Value_1) || 0;
-    const val2 = parseFloat(row.Value_2) || 0;
-    const sum = val1 + val2;
-    maxVal = Math.max(maxVal, val1, val2, sum);
-  });
-  const scaleMax = Math.ceil(maxVal * 1.1);
+      data.forEach((row, index) => {
+        if (!row.Chart_Title || !row.Label_1 || !row.Label_2 || !row.Value_1 || !row.Value_2) {
+          console.warn(`שורה ${index + 2} חסרה נתונים ונדלגת:`, row);
+          return;
+        }
 
-  data.forEach((row, index) => {
-    if (!row.Chart_Title || !row.Label_1 || !row.Label_2 || !row.Value_1 || !row.Value_2) {
-      console.warn(`שורה ${index + 2} (כולל כותרות) חסרה נתונים ונדלגת:`, row);
-      return;
-    }
+        const title = row.Chart_Title || `תרשים ${index + 1}`;
+        const label1 = row.Label_1 || 'קהל';
+        const label2 = row.Label_2 || 'שופטים';
+        const val1 = parseFloat(row.Value_1) || 0;
+        const val2 = parseFloat(row.Value_2) || 0;
+        const total = val1 + val2;
 
-    const title = row.Chart_Title || `תרשים ${index + 1}`;
-    const label1 = row.Label_1 || 'קהל';
-    const label2 = row.Label_2 || 'שופטים';
-    const val1 = parseFloat(row.Value_1) || 0;
-    const val2 = parseFloat(row.Value_2) || 0;
-    const total = val1 + val2;
+        const canvas = document.createElement('canvas');
+        const chartBox = document.createElement('div');
+        chartBox.className = 'chart-box';
+        chartBox.appendChild(canvas);
+        container.appendChild(chartBox);
 
-    const canvas = document.createElement('canvas');
-    const chartBox = document.createElement('div');
-    chartBox.className = 'chart-box';
-    chartBox.appendChild(canvas);
-    container.appendChild(chartBox);
+        new Chart(canvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: [label1, label2, 'סה"כ'],
+            datasets: [{
+              label: title,
+              data: [val1, val2, total],
+              backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                suggestedMax: scaleMax,
+                beginAtZero: true
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              title: {
+                display: true,
+                text: title,
+                font: { size: 18 }
+              }
+            }
+          }
+        });
+      });
+    }
 
-    new Chart(canvas.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: [label1, label2, 'סה"כ'],
-        datasets: [{
-          label: title,
-          data: [val1, val2, total],
-          backgroundColor: ['#42a5f5', '#66bb6a', '#ffa726']
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            suggestedMax: scaleMax,
-            beginAtZero: true
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: title,
-            font: { size: 18 }
-          }
-        }
-      }
-    });
-  });
-}
-
-// קריאה ראשונית לטעינת הנתונים כשדף נטען
-document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
-</script>
-אין קוד
+    document.addEventListener('DOMContentLoaded', fetchGoogleSheetData);
+  </script>
+יחמור
 </body>
 </html>
